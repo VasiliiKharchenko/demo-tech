@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: demotech-postgres
+    environment:
+      POSTGRES_DB: demotech
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - demotech-network
+
+  app:
+    build: .
+    container_name: demotech-app
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: demotech
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - demotech-network
+
+volumes:
+  postgres_data:
+
+networks:
+  demotech-network:
+    driver: bridge
