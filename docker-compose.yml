@@ -14,9 +14,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - demotech-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      target: production
     container_name: demotech-app
     environment:
       DB_HOST: postgres
@@ -27,9 +34,20 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - demotech-network
+
+  test:
+    build:
+      context: .
+      target: test
+    container_name: demotech-test
+    volumes:
+      - ./test-reports:/app/target
+    profiles:
+      - test
 
 volumes:
   postgres_data:
